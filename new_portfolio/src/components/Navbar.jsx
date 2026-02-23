@@ -1,102 +1,185 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from "react";
 
 export default function Navbar() {
-    const sideMenuRef = useRef();
-    const navRef = useRef();
-    const navLinkRef = useRef();
+  const sideMenuRef = useRef(null);
+  const [isDark, setIsDark] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
-    const openMenu = () => {
-        sideMenuRef.current.style.transform = 'translateX(-16rem)';
-    }
-    const closeMenu = () => {
-        sideMenuRef.current.style.transform = 'translateX(16rem)';
-    }
-    const toggleTheme = () => {
+  // Apply theme
+  const applyTheme = (darkMode) => {
+    document.documentElement.classList.toggle("dark", darkMode);
+    localStorage.theme = darkMode ? "dark" : "light";
+    setIsDark(darkMode);
+  };
 
-        document.documentElement.classList.toggle('dark');
+  const toggleTheme = () => {
+    applyTheme(!document.documentElement.classList.contains("dark"));
+  };
 
-        if (document.documentElement.classList.contains('dark')) {
-            localStorage.theme = 'dark';
-        } else {
-            localStorage.theme = 'light';
-        }
-    }
+  // Mobile menu
+  const openMenu = () => {
+    sideMenuRef.current.classList.remove("translate-x-full");
+    sideMenuRef.current.classList.add("translate-x-0");
+  };
 
-    useEffect(() => {
+  const closeMenu = () => {
+    sideMenuRef.current.classList.remove("translate-x-0");
+    sideMenuRef.current.classList.add("translate-x-full");
+  };
 
-        window.addEventListener('scroll', () => {
-            if (scrollY > 50) {
-                navRef.current.classList.add('bg-white', 'bg-opacity-50', 'backdrop-blur-lg', 'shadow-sm', 'dark:bg-darkTheme', 'dark:shadow-white/20');
-                navLinkRef.current.classList.remove('bg-white', 'shadow-sm', 'bg-opacity-50', 'dark:border', 'dark:border-white/30', "dark:bg-transparent");
-            } else {
-                navRef.current.classList.remove('bg-white', 'bg-opacity-50', 'backdrop-blur-lg', 'shadow-sm', 'dark:bg-darkTheme', 'dark:shadow-white/20');
-                navLinkRef.current.classList.add('bg-white', 'shadow-sm', 'bg-opacity-50', 'dark:border', 'dark:border-white/30', "dark:bg-transparent");
-            }
-        })
+  useEffect(() => {
+    const initialDark =
+      localStorage.theme === "dark" ||
+      (!("theme" in localStorage) &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches);
 
-        // -------- light mode and dark mode -----------
+    applyTheme(initialDark);
 
-        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark')
-        } else {
-            document.documentElement.classList.remove('dark')
-        }
-    }, [])
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
 
-    return (
-        <>
-            <div className="fixed top-0 right-0 w-11/12 -z-10 translate-y-[-80%] dark:hidden">
-                <img src="./assets/header-bg-color.png" alt="" className="w-full" />
-            </div>
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
-            <nav ref={navRef} className="w-full fixed px-5 lg:px-8 xl:px-[8%] py-4 flex items-center justify-between z-50">
+  const links = [
+    { name: "Home", href: "#top" },
+    { name: "About", href: "#about" },
+    { name: "Skills", href: "#skills" },
+    { name: "Services", href: "#services" },
+    { name: "Work", href: "#work" },
+    { name: "Contact", href: "#contact" },
+  ];
 
-                <a href="#">
-                    <img src="./assets/logo.png" alt="Logo" className="w-28 cursor-pointer mr-14 dark:hidden" />
-                    <img src="./assets/logo_dark.png" alt="Logo" className="w-28 cursor-pointer mr-14 hidden dark:block" />
+  return (
+    <>
+      {/* Subtle animated gradient strip */}
+      <div className="pointer-events-none fixed top-0 left-0 right-0 h-24 -z-10">
+        <div className="absolute inset-0 animate-gradient bg-gradient-to-r from-purple-600/20 via-pink-500/15 to-cyan-500/20" />
+      </div>
+
+      <nav
+        className={`fixed w-full top-0 left-0 z-50 px-6 lg:px-10 xl:px-[8%] py-4 transition-all duration-300 ${
+          isScrolled
+            ? "backdrop-blur-lg bg-white/10 border-b border-white/15 shadow-md"
+            : "bg-transparent"
+        }`}
+      >
+        <div className="flex items-center justify-between">
+
+          {/* ✅ PROFESSIONAL TEXT LOGO */}
+          <a href="#top" className="flex items-center gap-2">
+            <span className="text-2xl font-semibold tracking-wide font-Ovo text-gray-900 dark:text-white">
+              Aditya
+            </span>
+          </a>
+
+          {/* Desktop Menu */}
+          <ul className="hidden md:flex items-center gap-8 px-10 py-3 rounded-full font-Ovo backdrop-blur-md bg-white/10 border border-white/20">
+            {links.map((link) => (
+              <li key={link.name}>
+                <a
+                  href={link.href}
+                  className="hover:text-gray-600 dark:hover:text-gray-300 transition"
+                >
+                  {link.name}
                 </a>
+              </li>
+            ))}
+          </ul>
 
-                <ul ref={navLinkRef} className="hidden md:flex items-center gap-6 lg:gap-8 rounded-full px-12 py-3 bg-white shadow-sm bg-opacity-50 font-Ovo dark:border dark:border-white/30 dark:bg-transparent ">
-                    <li><a className='hover:text-gray-500 dark:hover:text-gray-300 transition' href="#top">Home</a></li>
-                    <li><a className='hover:text-gray-500 dark:hover:text-gray-300 transition' href="#about">About me</a></li>
-                    <li><a className='hover:text-gray-500 dark:hover:text-gray-300 transition' href="#services">Services</a></li>
-                    <li><a className='hover:text-gray-500 dark:hover:text-gray-300 transition' href="#work">My Work</a></li>
-                    <li><a className='hover:text-gray-500 dark:hover:text-gray-300 transition' href="#contact">Contact me</a></li>
-                </ul>
+          {/* Right Section */}
+          <div className="flex items-center gap-4">
 
-                <div className="flex items-center gap-4">
-                    <button onClick={toggleTheme}>
-                        <img src="./assets/moon_icon.png" alt="" className="w-5 dark:hidden" />
-                        <img src="./assets/sun_icon.png" alt="" className="w-5 hidden dark:block" />
-                    </button>
+            {/* Theme Toggle */}
+            <button
+              onClick={toggleTheme}
+              className="h-10 w-10 flex items-center justify-center rounded-full backdrop-blur-md bg-white/10 border border-white/20 hover:scale-105 transition"
+            >
+              <img
+                src={isDark ? "./assets/sun_icon.png" : "./assets/moon_icon.png"}
+                alt="Theme toggle"
+                className="w-5"
+              />
+            </button>
 
-                    <a href="#contact" className="hidden lg:flex items-center gap-3 px-8 py-1.5 border border-gray-300 hover:bg-slate-100/70 dark:hover:bg-darkHover rounded-full ml-4 font-Ovo dark:border-white/30">
-                        Contact
-                        <img src="./assets/arrow-icon.png" alt="" className="w-3 dark:hidden" />
-                        <img src="./assets/arrow-icon-dark.png" alt="" className="w-3 hidden dark:block" />
-                    </a>
+            {/* Contact Button */}
+            <a
+              href="#contact"
+              className="hidden lg:flex items-center gap-2 px-6 py-2 rounded-full backdrop-blur-md bg-white/10 border border-white/20 hover:bg-white/20 transition font-Ovo"
+            >
+              Contact
+            </a>
 
-                    <button className="block md:hidden ml-3" onClick={openMenu}>
-                        <img src="./assets/menu-black.png" alt="" className="w-6 dark:hidden" />
-                        <img src="./assets/menu-white.png" alt="" className="w-6 hidden dark:block" />
-                    </button>
+            {/* Mobile Menu Button */}
+            <button
+              onClick={openMenu}
+              className="block md:hidden h-10 w-10 flex items-center justify-center rounded-full backdrop-blur-md bg-white/10 border border-white/20"
+            >
+              <img
+                src="./assets/menu-black.png"
+                alt="Menu"
+                className="w-6 dark:hidden"
+              />
+              <img
+                src="./assets/menu-white.png"
+                alt="Menu"
+                className="w-6 hidden dark:block"
+              />
+            </button>
+          </div>
+        </div>
 
-                </div>
-                {/* -- ----- mobile menu ------  -- */}
-                <ul ref={sideMenuRef} className="flex md:hidden flex-col gap-4 py-20 px-10 fixed -right-64 top-0 bottom-0 w-64 z-50 h-screen bg-rose-50 transition duration-500 font-Ovo dark:bg-darkHover dark:text-white">
+        {/* Mobile Side Menu */}
+        <aside
+          ref={sideMenuRef}
+          className="fixed top-0 right-0 w-72 h-screen translate-x-full transition-transform duration-500 md:hidden backdrop-blur-xl bg-white/10 border-l border-white/20 p-8"
+        >
+          <button
+            onClick={closeMenu}
+            className="absolute top-6 right-6"
+          >
+            <img
+              src="./assets/close-black.png"
+              alt="Close"
+              className="w-5 dark:hidden"
+            />
+            <img
+              src="./assets/close-white.png"
+              alt="Close"
+              className="w-5 hidden dark:block"
+            />
+          </button>
 
-                    <div className="absolute right-6 top-6" onClick={closeMenu}>
-                        <img src="./assets/close-black.png" alt="" className="w-5 cursor-pointer dark:hidden" />
-                        <img src="./assets/close-white.png" alt="" className="w-5 cursor-pointer hidden dark:block" />
-                    </div>
+          <ul className="mt-16 flex flex-col gap-6 font-Ovo">
+            {links.map((link) => (
+              <li key={link.name}>
+                <a
+                  href={link.href}
+                  onClick={closeMenu}
+                  className="hover:text-gray-600 dark:hover:text-gray-300 transition"
+                >
+                  {link.name}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </aside>
+      </nav>
 
-                    <li><a href="#top" onClick={closeMenu}>Home</a></li>
-                    <li><a href="#about" onClick={closeMenu}>About me</a></li>
-                    <li><a href="#services" onClick={closeMenu}>Services</a></li>
-                    <li><a href="#work" onClick={closeMenu}>My Work</a></li>
-                    <li><a href="#contact" onClick={closeMenu}>Contact me</a></li>
-                </ul>
-            </nav>
-        </>
-    )
+      {/* Gradient Animation CSS */}
+      <style>{`
+        .animate-gradient {
+          background-size: 200% 200%;
+          animation: gradientMove 8s ease infinite;
+        }
+        @keyframes gradientMove {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+      `}</style>
+    </>
+  );
 }
